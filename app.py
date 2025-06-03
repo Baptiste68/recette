@@ -1,498 +1,609 @@
 """
-Idee recettes - Version sans émojis
+Application principale de gestion d'inventaire alimentaire et de suggestions de recettes
+avec optimisation et gestion des régimes alimentaires
 """
 
 import toga
 from toga.style import Pack
-from toga.style.pack import COLUMN, ROW, LEFT, RIGHT, CENTER
-import requests
+from toga.style.pack import COLUMN, ROW, CENTER
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# Clé API Spoonacular
+# Import des modules personnalisés
+from .diet_manager import DietManager, RegimeAlimentaire, Allergie
+from .inventory import InventoryManager
+from .recipe_manager import RecipeManager
+
+# Configuration
 API_KEY = "ded78740b47643a18aecd38bc430db1a"
 
-inventaire = {}
-
-# Application BeeWare
 class InventaireApp(toga.App):
     def startup(self):
-        # Configuration des couleurs et styles
-        self.couleur_principale = "#2E7D32"  # Vert foncé
-        self.couleur_secondaire = "#4CAF50"  # Vert clair
-        self.couleur_accent = "#81C784"      # Vert pastel
-        self.couleur_fond = "#F1F8E9"        # Vert très clair
+        """Initialisation de l'application"""
+        # Initialisation des gestionnaires
+        self.diet_manager = DietManager()
+        self.inventory_manager = InventoryManager()
+        self.recipe_manager = RecipeManager(API_KEY)
         
-        # Création de l'interface principale
-        self.creer_interface()
+        # État de l'application
+        self.current_tab = "inventaire"
         
-        # Configuration de la fenêtre
-        self.main_window = toga.MainWindow(title="Gestion d'Inventaire Alimentaire")
-        self.main_window.content = self.conteneur_principal
+        # Création de l'interface
+        self.create_interface()
+        
+        # Configuration de la fenêtre principale
+        self.main_window = toga.MainWindow(title=self.formal_name)
+        self.main_window.content = self.main_container
         self.main_window.show()
 
-    def creer_interface(self):
-        # Conteneur principal avec ScrollContainer
-        self.conteneur_principal = toga.ScrollContainer(
-            style=Pack(
-                direction=COLUMN,
-                padding=20,
-                background_color=self.couleur_fond
-            )
+    def create_interface(self):
+        """Création de l'interface utilisateur avec onglets"""
+        # Container principal
+        self.main_container = toga.Box(style=Pack(direction=COLUMN, padding=5))
+        
+        # Barre de navigation avec boutons stylisés
+        nav_box = toga.Box(style=Pack(direction=ROW, padding=5, background_color="#f0f0f0"))
+        
+        self.btn_inventaire = toga.Button(
+            "📦 Inventaire",
+            on_press=self.show_inventaire_tab,
+            style=Pack(flex=1, padding=5, background_color="#4CAF50", color="white")
         )
         
-        # En-tête avec titre stylisé
-        self.creer_entete()
+        self.btn_regimes = toga.Button(
+            "🥗 Régimes",
+            on_press=self.show_regimes_tab,
+            style=Pack(flex=1, padding=5, background_color="#2196F3", color="white")
+        )
         
-        # Section d'ajout d'aliments
-        self.creer_section_ajout()
+        self.btn_recettes = toga.Button(
+            "🍽️ Recettes",
+            on_press=self.show_recettes_tab,
+            style=Pack(flex=1, padding=5, background_color="#FF9800", color="white")
+        )
         
-        # Section d'affichage de l'inventaire
-        self.creer_section_inventaire()
+        nav_box.add(self.btn_inventaire)
+        nav_box.add(self.btn_regimes)
+        nav_box.add(self.btn_recettes)
         
-        # Section des recettes
-        self.creer_section_recettes()
+        # Container pour le contenu des onglets
+        self.content_container = toga.ScrollContainer(style=Pack(flex=1, padding=10))
         
-        # Assemblage des sections
-        contenu_principal = toga.Box(style=Pack(direction=COLUMN))
-        contenu_principal.add(self.entete)
-        contenu_principal.add(self.section_ajout)
-        contenu_principal.add(self.section_inventaire)
-        contenu_principal.add(self.section_recettes)
+        # Création des différents onglets
+        self.create_inventaire_tab()
+        self.create_regimes_tab()
+        self.create_recettes_tab()
         
-        self.conteneur_principal.content = contenu_principal
+        # Ajout à l'interface principale
+        self.main_container.add(nav_box)
+        self.main_container.add(self.content_container)
+        
+        # Affichage de l'onglet inventaire par défaut
+        self.show_inventaire_tab(None)
 
-    def creer_entete(self):
-        """Crée un en-tête attrayant"""
-        self.entete = toga.Box(style=Pack(
-            direction=COLUMN,
-            padding_bottom=30,
-            text_align=CENTER
-        ))
+    def create_inventaire_tab(self):
+        """Création de l'onglet inventaire"""
+        self.inventaire_box = toga.Box(style=Pack(direction=COLUMN, padding=10))
         
-        # Titre principal
-        titre = toga.Label(
-            "*** MON INVENTAIRE ALIMENTAIRE ***",
-            style=Pack(
-                font_size=28,
-                font_weight="bold",
-                padding_bottom=10,
-                text_align=CENTER
-            )
+        # Titre avec icône
+        title_label = toga.Label(
+            "📦 GESTION DE L'INVENTAIRE",
+            style=Pack(text_align=CENTER, font_size=18, font_weight="bold", padding=10)
         )
         
-        # Sous-titre descriptif
-        sous_titre = toga.Label(
-            "Gerez vos aliments et decouvrez de delicieuses recettes",
-            style=Pack(
-                font_size=16,
-                padding_bottom=20,
-                text_align=CENTER
-            )
-        )
+        # Section ajout d'aliment
+        ajout_box = toga.Box(style=Pack(direction=COLUMN, padding=10, background_color="#f9f9f9"))
+        ajout_title = toga.Label("➕ Ajouter un aliment", style=Pack(font_weight="bold", padding=5))
         
-        self.entete.add(titre)
-        self.entete.add(sous_titre)
-
-    def creer_section_ajout(self):
-        """Section pour ajouter des aliments avec design moderne"""
-        self.section_ajout = toga.Box(style=Pack(
-            direction=COLUMN,
-            padding=20,
-            background_color="#FFFFFF",
-            text_align=LEFT
-        ))
-        
-        # Titre de section
-        titre_ajout = toga.Label(
-            "[+] AJOUTER UN ALIMENT",
-            style=Pack(
-                font_size=20,
-                font_weight="bold",
-                padding_bottom=15
-            )
-        )
-        
-        # Conteneur pour les champs organisés
-        conteneur_champs = toga.Box(style=Pack(
-            direction=COLUMN,
-            padding_bottom=15
-        ))
-        
-        # Champ nom avec label
-        label_nom = toga.Label("Nom de l'aliment :", style=Pack(padding_bottom=5))
+        # Champs de saisie
         self.nom_aliment = toga.TextInput(
-            placeholder="Ex: Tomates, Pommes, Lait...",
-            style=Pack(
-                padding=10,
-                font_size=14,
-                width=300
-            )
+            placeholder="🍎 Nom de l'aliment",
+            style=Pack(padding=5)
         )
         
-        # Conteneur pour quantité et expiration en ligne
-        conteneur_ligne = toga.Box(style=Pack(direction=ROW, padding_top=10))
-        
-        # Champ quantité
-        conteneur_quantite = toga.Box(style=Pack(direction=COLUMN, flex=1, padding_right=10))
-        label_quantite = toga.Label("Quantite :", style=Pack(padding_bottom=5))
-        self.quantite = toga.TextInput(
-            placeholder="Ex: 5",
-            style=Pack(padding=8, font_size=14)
+        input_row = toga.Box(style=Pack(direction=ROW, padding=5))
+        self.quantite_aliment = toga.TextInput(
+            placeholder="📊 Quantité",
+            style=Pack(flex=1, padding=3)
+        )
+        self.expiration_aliment = toga.TextInput(
+            placeholder="📅 Expiration (YYYY-MM-DD)",
+            style=Pack(flex=2, padding=3)
         )
         
-        # Champ expiration
-        conteneur_expiration = toga.Box(style=Pack(direction=COLUMN, flex=1))
-        label_expiration = toga.Label("Date d'expiration :", style=Pack(padding_bottom=5))
-        self.expiration = toga.TextInput(
-            placeholder="YYYY-MM-DD",
-            style=Pack(padding=8, font_size=14)
-        )
+        input_row.add(self.quantite_aliment)
+        input_row.add(self.expiration_aliment)
         
-        # Bouton d'ajout
-        self.bouton_ajouter = toga.Button(
-            "AJOUTER A L'INVENTAIRE",
+        btn_ajouter = toga.Button(
+            "✅ Ajouter à l'inventaire",
             on_press=self.ajouter_aliment,
-            style=Pack(
-                padding=15,
-                font_size=16,
-                font_weight="bold",
-                width=250,
-                background_color=self.couleur_principale,
-                color="#FFFFFF"
-            )
+            style=Pack(padding=10, background_color="#4CAF50", color="white")
         )
         
-        # Assemblage des éléments
-        conteneur_champs.add(label_nom)
-        conteneur_champs.add(self.nom_aliment)
+        ajout_box.add(ajout_title)
+        ajout_box.add(self.nom_aliment)
+        ajout_box.add(input_row)
+        ajout_box.add(btn_ajouter)
         
-        conteneur_quantite.add(label_quantite)
-        conteneur_quantite.add(self.quantite)
-        conteneur_expiration.add(label_expiration)
-        conteneur_expiration.add(self.expiration)
+        # Section actions
+        actions_box = toga.Box(style=Pack(direction=ROW, padding=10))
         
-        conteneur_ligne.add(conteneur_quantite)
-        conteneur_ligne.add(conteneur_expiration)
+        btn_afficher = toga.Button(
+            "📋 Voir inventaire",
+            on_press=self.afficher_inventaire,
+            style=Pack(flex=1, padding=5, background_color="#2196F3", color="white")
+        )
         
-        self.section_ajout.add(titre_ajout)
-        self.section_ajout.add(conteneur_champs)
-        self.section_ajout.add(conteneur_ligne)
-        self.section_ajout.add(toga.Box(style=Pack(padding_top=15)))
-        self.section_ajout.add(self.bouton_ajouter)
+        btn_expires = toga.Button(
+            "⚠️ Aliments expirés",
+            on_press=self.afficher_expires,
+            style=Pack(flex=1, padding=5, background_color="#f44336", color="white")
+        )
+        
+        btn_stats = toga.Button(
+            "📊 Statistiques",
+            on_press=self.afficher_statistiques,
+            style=Pack(flex=1, padding=5, background_color="#9C27B0", color="white")
+        )
+        
+        actions_box.add(btn_afficher)
+        actions_box.add(btn_expires)
+        actions_box.add(btn_stats)
+        
+        # Assemblage de l'onglet inventaire
+        self.inventaire_box.add(title_label)
+        self.inventaire_box.add(ajout_box)
+        self.inventaire_box.add(actions_box)
 
-    def creer_section_inventaire(self):
-        """Section d'affichage de l'inventaire avec style moderne"""
-        self.section_inventaire = toga.Box(style=Pack(
-            direction=COLUMN,
-            padding=20,
-            padding_top=30,
-            background_color="#FFFFFF"
-        ))
+    def create_regimes_tab(self):
+        """Création de l'onglet régimes alimentaires"""
+        self.regimes_box = toga.Box(style=Pack(direction=COLUMN, padding=10))
         
-        # En-tête de section avec bouton
-        entete_inventaire = toga.Box(style=Pack(direction=ROW))
-        titre_inventaire = toga.Label(
-            "[*] MON INVENTAIRE",
-            style=Pack(
-                font_size=20,
-                font_weight="bold",
-                flex=1
-            )
+        # Titre
+        title_label = toga.Label(
+            "🥗 PRÉFÉRENCES ALIMENTAIRES",
+            style=Pack(text_align=CENTER, font_size=18, font_weight="bold", padding=10)
         )
         
-        self.bouton_actualiser = toga.Button(
-            "ACTUALISER",
-            on_press=self.actualiser_inventaire,
-            style=Pack(
-                padding=10,
-                background_color=self.couleur_secondaire,
-                color="#FFFFFF"
+        # Section régimes alimentaires
+        regimes_section = toga.Box(style=Pack(direction=COLUMN, padding=10, background_color="#f9f9f9"))
+        regimes_title = toga.Label("🍽️ Régimes alimentaires", style=Pack(font_weight="bold", padding=5))
+        
+        # Checkboxes pour les régimes
+        self.regime_checkboxes = {}
+        regimes_grid = toga.Box(style=Pack(direction=COLUMN, padding=5))
+        
+        for regime in RegimeAlimentaire:
+            checkbox = toga.Switch(
+                text=f"{regime.emoji} {regime.nom_affichage} - {regime.description}",
+                on_change=lambda widget, regime=regime: self.toggle_regime(regime, widget.value),
+                style=Pack(padding=3)
             )
+            self.regime_checkboxes[regime] = checkbox
+            regimes_grid.add(checkbox)
+        
+        regimes_section.add(regimes_title)
+        regimes_section.add(regimes_grid)
+        
+        # Section allergies
+        allergies_section = toga.Box(style=Pack(direction=COLUMN, padding=10, background_color="#fff3cd"))
+        allergies_title = toga.Label("⚠️ Allergies et intolérances", style=Pack(font_weight="bold", padding=5))
+        
+        self.allergie_checkboxes = {}
+        allergies_grid = toga.Box(style=Pack(direction=COLUMN, padding=5))
+        
+        for allergie in Allergie:
+            checkbox = toga.Switch(
+                text=f"{allergie.emoji} {allergie.nom_affichage}",
+                on_change=lambda widget, allergie=allergie: self.toggle_allergie(allergie, widget.value),
+                style=Pack(padding=3)
+            )
+            self.allergie_checkboxes[allergie] = checkbox
+            allergies_grid.add(checkbox)
+        
+        allergies_section.add(allergies_title)
+        allergies_section.add(allergies_grid)
+        
+        # Boutons d'action
+        actions_box = toga.Box(style=Pack(direction=ROW, padding=10))
+        
+        btn_resume = toga.Button(
+            "📄 Voir résumé",
+            on_press=self.afficher_resume_preferences,
+            style=Pack(flex=1, padding=5, background_color="#4CAF50", color="white")
         )
         
-        # Zone d'affichage permanente de l'inventaire
-        """
-        self.zone_inventaire = toga.MultilineTextInput(
-            readonly=True,
-            placeholder="Votre inventaire",
-            style=Pack(
-                height=200,
-                padding=15,
-                font_size=14,
-                background_color=self.couleur_fond
-            )
+        btn_reset = toga.Button(
+            "🔄 Réinitialiser",
+            on_press=self.reset_preferences,
+            style=Pack(flex=1, padding=5, background_color="#f44336", color="white")
         )
-        """
+        
+        actions_box.add(btn_resume)
+        actions_box.add(btn_reset)
+        
+        # Assemblage de l'onglet régimes
+        self.regimes_box.add(title_label)
+        self.regimes_box.add(regimes_section)
+        self.regimes_box.add(allergies_section)
+        self.regimes_box.add(actions_box)
 
-        # Zone d'affichage permanente de l'inventaire
-        self.zone_inventaire = toga.Box(style=Pack(
-            padding=15,
-            font_size=14,
-            direction=COLUMN,
-            background_color=self.couleur_fond
-        ))
-
-        entete_inventaire.add(titre_inventaire)
-        entete_inventaire.add(self.bouton_actualiser)
+    def create_recettes_tab(self):
+        """Création de l'onglet recettes"""
+        self.recettes_box = toga.Box(style=Pack(direction=COLUMN, padding=10))
         
-        self.section_inventaire.add(entete_inventaire)
-        self.section_inventaire.add(toga.Box(style=Pack(padding_top=15)))
-        self.section_inventaire.add(self.zone_inventaire)
-        self.actualiser_inventaire(None)
-
-    def creer_section_recettes(self):
-        """Section des recettes avec design attrayant"""
-        self.section_recettes = toga.Box(style=Pack(
-            direction=COLUMN,
-            padding=20,
-            padding_top=30,
-            background_color="#FFFFFF"
-        ))
-        
-        # Titre et bouton organisés
-        entete_recettes = toga.Box(style=Pack(direction=ROW))
-        titre_recettes = toga.Label(
-            "[?] SUGGESTIONS DE RECETTES",
-            style=Pack(
-                font_size=20,
-                font_weight="bold",
-                flex=1
-            )
+        # Titre
+        title_label = toga.Label(
+            "🍽️ SUGGESTIONS DE RECETTES",
+            style=Pack(text_align=CENTER, font_size=18, font_weight="bold", padding=10)
         )
         
-        self.bouton_recettes = toga.Button(
-            "TROUVER DES RECETTES",
-            on_press=self.recuperer_recettes,
-            style=Pack(
-                padding=12,
-                font_size=14,
-                font_weight="bold",
-                background_color=self.couleur_accent,
-                color="#000000"
-            )
+        # Section recherche optimisée
+        recherche_box = toga.Box(style=Pack(direction=COLUMN, padding=10, background_color="#e8f5e8"))
+        recherche_title = toga.Label("🎯 Recherche optimisée", style=Pack(font_weight="bold", padding=5))
+        
+        description_label = toga.Label(
+            "Trouve les meilleures recettes avec vos ingrédients disponibles.\n"
+            "Priorise les aliments qui expirent bientôt !",
+            style=Pack(padding=5, text_align=CENTER)
         )
         
-        # Zone d'affichage permanente des recettes
-        self.zone_recettes = toga.MultilineTextInput(
-            readonly=True,
-            placeholder="Les recettes suggerees apparaitront ici...\nAjoutez des aliments a votre inventaire puis cliquez sur 'Trouver des Recettes'",
-            style=Pack(
-                height=250,
-                padding=15,
-                font_size=14,
-                background_color=self.couleur_fond
-            )
+        btn_recherche_optimisee = toga.Button(
+            "🚀 Recherche optimisée",
+            on_press=self.recherche_recettes_optimisee,
+            style=Pack(padding=10, background_color="#4CAF50", color="white")
         )
         
-        entete_recettes.add(titre_recettes)
-        entete_recettes.add(self.bouton_recettes)
+        recherche_box.add(recherche_title)
+        recherche_box.add(description_label)
+        recherche_box.add(btn_recherche_optimisee)
         
-        self.section_recettes.add(entete_recettes)
-        self.section_recettes.add(toga.Box(style=Pack(padding_top=15)))
-        self.section_recettes.add(self.zone_recettes)
+        # Section recherche par nom
+        nom_box = toga.Box(style=Pack(direction=COLUMN, padding=10, background_color="#fff3e0"))
+        nom_title = toga.Label("🔍 Recherche par nom", style=Pack(font_weight="bold", padding=5))
+        
+        self.nom_recette = toga.TextInput(
+            placeholder="🍝 Nom de la recette (ex: pasta, pizza, soup...)",
+            style=Pack(padding=5)
+        )
+        
+        btn_recherche_nom = toga.Button(
+            "🔍 Rechercher",
+            on_press=self.recherche_recettes_par_nom,
+            style=Pack(padding=5, background_color="#FF9800", color="white")
+        )
+        
+        nom_box.add(nom_title)
+        nom_box.add(self.nom_recette)
+        nom_box.add(btn_recherche_nom)
+        
+        # Section statistiques
+        stats_box = toga.Box(style=Pack(direction=ROW, padding=10))
+        
+        btn_aliments_expires = toga.Button(
+            "⏰ Aliments à utiliser",
+            on_press=self.afficher_aliments_prioritaires,
+            style=Pack(flex=1, padding=5, background_color="#f44336", color="white")
+        )
+        
+        btn_suggestions = toga.Button(
+            "💡 Suggestions d'achats",
+            on_press=self.suggestions_achats,
+            style=Pack(flex=1, padding=5, background_color="#2196F3", color="white")
+        )
+        
+        stats_box.add(btn_aliments_expires)
+        stats_box.add(btn_suggestions)
+        
+        # Assemblage de l'onglet recettes
+        self.recettes_box.add(title_label)
+        self.recettes_box.add(recherche_box)
+        self.recettes_box.add(nom_box)
+        self.recettes_box.add(stats_box)
 
-    def ajouter_aliment(self, widget):
-        """Ajouter un aliment avec validation améliorée"""
-        nom = self.nom_aliment.value.strip().title()
+    # Méthodes de navigation
+    def show_inventaire_tab(self, widget):
+        """Affiche l'onglet inventaire"""
+        self.current_tab = "inventaire"
+        self.content_container.content = self.inventaire_box
+        self.update_nav_buttons()
+
+    def show_regimes_tab(self, widget):
+        """Affiche l'onglet régimes"""
+        self.current_tab = "regimes"
+        self.content_container.content = self.regimes_box
+        self.update_nav_buttons()
+
+    def show_recettes_tab(self, widget):
+        """Affiche l'onglet recettes"""
+        self.current_tab = "recettes"
+        self.content_container.content = self.recettes_box
+        self.update_nav_buttons()
+
+    def update_nav_buttons(self):
+        """Met à jour l'apparence des boutons de navigation"""
+        # Reset tous les boutons
+        self.btn_inventaire.style.background_color = "#4CAF50"
+        self.btn_regimes.style.background_color = "#2196F3"
+        self.btn_recettes.style.background_color = "#FF9800"
+        
+        # Highlight le bouton actif
+        if self.current_tab == "inventaire":
+            self.btn_inventaire.style.background_color = "#2E7D32"
+        elif self.current_tab == "regimes":
+            self.btn_regimes.style.background_color = "#1565C0"
+        elif self.current_tab == "recettes":
+            self.btn_recettes.style.background_color = "#E65100"
+
+    # Méthodes de l'inventaire
+    async def ajouter_aliment(self, widget):
+        """Ajoute un aliment à l'inventaire"""
+        nom = self.nom_aliment.value.strip()
+        quantite_str = self.quantite_aliment.value.strip()
+        expiration = self.expiration_aliment.value.strip()
         
         if not nom:
-            self.main_window.error_dialog("Erreur", "Veuillez saisir le nom de l'aliment.")
+            await self.main_window.error_dialog("Erreur", "Veuillez saisir le nom de l'aliment.")
             return
         
         try:
-            quantite_val = int(self.quantite.value) if self.quantite.value else 1
+            quantite = int(quantite_str) if quantite_str else 1
         except ValueError:
-            self.main_window.error_dialog("Erreur", "La quantite doit etre un nombre entier.")
+            await self.main_window.error_dialog("Erreur", "La quantité doit être un nombre entier.")
             return
         
-        expiration_val = self.expiration.value.strip() if self.expiration.value else "Non specifiee"
+        if not expiration:
+            expiration = "Non specifiee"
         
-        # Validation de la date si fournie
-        if expiration_val != "Non specifiee":
-            try:
-                datetime.strptime(expiration_val, "%Y-%m-%d")
-            except ValueError:
-                self.main_window.error_dialog("Erreur", "Format de date incorrect. Utilisez YYYY-MM-DD")
+        # Vérification de compatibilité avec les régimes
+        compatible, raison = self.diet_manager.valider_aliment_compatible(nom)
+        if not compatible:
+            result = await self.main_window.question_dialog(
+                "Attention",
+                f"L'aliment '{nom}' n'est pas compatible avec vos préférences:\n{raison}\n\nVoulez-vous l'ajouter quand même ?"
+            )
+            if not result:
                 return
         
-        # Ajout ou mise à jour
-        if nom in inventaire:
-            inventaire[nom]['quantite'] += quantite_val
-            message = f"[OK] {nom} mis a jour !\nQuantite totale : {inventaire[nom]['quantite']}"
+        # Ajout à l'inventaire
+        succes, message = self.inventory_manager.ajouter_aliment(nom, quantite, expiration)
+        
+        if succes:
+            # Vider les champs
+            self.nom_aliment.value = ""
+            self.quantite_aliment.value = ""
+            self.expiration_aliment.value = ""
+            
+            await self.main_window.info_dialog("Succès", message)
         else:
-            inventaire[nom] = {
-                'quantite': quantite_val,
-                'expiration': expiration_val
-            }
-            message = f"[OK] {nom} ajoute avec succes !\nQuantite : {quantite_val}"
-        
-        # Nettoyage des champs
-        self.nom_aliment.value = ""
-        self.quantite.value = ""
-        self.expiration.value = ""
-        
-        # Actualisation automatique de l'inventaire
-        self.actualiser_inventaire(None)
-        
-        self.main_window.info_dialog("Succes", message)
+            await self.main_window.error_dialog("Erreur", message)
 
-    def actualiser_inventaire(self, widget):
-        """Actualise l'affichage de l'inventaire avec format amélioré"""
+    async def afficher_inventaire(self, widget):
+        """Affiche l'inventaire complet"""
+        inventaire = self.inventory_manager.obtenir_inventaire()
+        
         if not inventaire:
-            self.zone_inventaire.clear()
-            inventaire_vide = toga.Label(
-                f"[VIDE] Votre inventaire est vide.\nAjoutez des aliments pour commencer !",
-                style=Pack(font_size=14, flex=1)
-            )
-            self.zone_inventaire.add(inventaire_vide)
-            return
-
-        print(inventaire)
-        # Clear the current content before updating
-        self.zone_inventaire.clear()
-        print(inventaire)
-        for nom, details in inventaire.items():
-            quantite = details['quantite']
-            expiration = details['expiration']
-            
-            # Icône selon le type d'aliment
-            icone = self.obtenir_icone_aliment(nom)
-            
-            # Formatage de l'expiration avec alertes
-            if expiration != "Non specifiee":
-                try:
-                    date_exp = datetime.strptime(expiration, "%Y-%m-%d")
-                    jours_restants = (date_exp - datetime.now()).days
-                    
-                    if jours_restants < 0:
-                        statut_exp = "[!] EXPIRE"
-                    elif jours_restants <= 3:
-                        statut_exp = f"[!] Expire dans {jours_restants} jour(s)"
-                    elif jours_restants <= 7:
-                        statut_exp = f"[?] Expire dans {jours_restants} jours"
-                    else:
-                        statut_exp = f"[OK] Expire le {expiration}"
-                except:
-                    statut_exp = f"[?] {expiration}"
-            else:
-                statut_exp = "[?] Date non specifiee"
-
-            # Formatage de chaque élément
-            """
-            inventaire_formate += f"{icone} {nom}\n"
-            inventaire_formate += f"   Quantite : {quantite}\n"
-            inventaire_formate += f"   {statut_exp}\n\n"
-            """
-            
-            # Détails de l'aliment (Nom, Quantité, Expiration)
-            aliment_label = toga.Label(
-                f"{nom} - Quantité: {quantite} - Expiration: {expiration}",
-                style=Pack(font_size=14, flex=1)
-            )
-            
-            # Bouton de suppression
-
-            bouton_supprimer = toga.Button(
-                "Supprimer",
-                on_press=lambda widget, aliment=nom: self.supprimer_aliment(aliment),
-                style=Pack(width=80,alignment=CENTER, font_size=12, background_color="#D32F2F", color="white")
-            )
-            
-            # Ajouter l'aliment à la zone d'inventaire
-            self.zone_inventaire.add(aliment_label)
-            self.zone_inventaire.add(bouton_supprimer)
-
-    def supprimer_aliment(self, aliment):
-        """Supprimer un aliment de l'inventaire"""
-        if aliment in inventaire:
-            del inventaire[aliment]
-            self.main_window.info_dialog("Succès", f"{aliment} a été supprimé de votre inventaire.")
-            self.actualiser_inventaire(None)  # Actualisation après suppression
-        else:
-            self.main_window.error_dialog("Erreur", f"{aliment} n'existe pas dans l'inventaire.")
-
-    def obtenir_icone_aliment(self, nom):
-        """Retourne une icône textuelle selon le nom de l'aliment"""
-        nom_lower = nom.lower()
-        if any(fruit in nom_lower for fruit in ['pomme', 'poire', 'banane', 'orange']):
-            return "[FRUIT]"
-        elif any(legume in nom_lower for legume in ['tomate', 'carotte', 'salade', 'epinard']):
-            return "[LEGUME]"
-        elif any(produit in nom_lower for produit in ['lait', 'yaourt', 'fromage']):
-            return "[LAITIER]"
-        elif any(viande in nom_lower for viande in ['poulet', 'boeuf', 'porc', 'poisson']):
-            return "[VIANDE]"
-        else:
-            return "[AUTRE]"
-
-    def recuperer_recettes(self, widget):
-        """Récupère les recettes avec interface améliorée"""
-        if not inventaire:
-            self.zone_recettes.value = "[ERREUR] Votre inventaire est vide !\nAjoutez des aliments avant de chercher des recettes."
+            await self.main_window.info_dialog("Inventaire", "📦 Votre inventaire est vide.")
             return
         
-        # Indication de chargement
-        self.zone_recettes.value = "[...] Recherche de recettes en cours...\nVeuillez patienter..."
-        self.bouton_recettes.text = "RECHERCHE..."
-        self.bouton_recettes.enabled = False
+        contenu = "📦 VOTRE INVENTAIRE\n" + "=" * 30 + "\n\n"
+        
+        for nom, details in sorted(inventaire.items()):
+            icone = self.inventory_manager.obtenir_icone_aliment(nom)
+            statut = self.inventory_manager.obtenir_statut_expiration(nom)
+            
+            contenu += f"{icone} {nom}\n"
+            contenu += f"   📊 Quantité: {details['quantite']}\n"
+            contenu += f"   {statut}\n\n"
+        
+        await self.main_window.info_dialog("Inventaire", contenu)
+
+    async def afficher_expires(self, widget):
+        """Affiche les aliments expirés ou bientôt expirés"""
+        expires = self.inventory_manager.obtenir_aliments_expires()
+        bientot_expires = self.inventory_manager.obtenir_aliments_bientot_expires()
+        
+        contenu = "⚠️ ALIMENTS À SURVEILLER\n" + "=" * 30 + "\n\n"
+        
+        if expires:
+            contenu += "🔴 EXPIRÉS:\n"
+            for aliment in expires:
+                icone = self.inventory_manager.obtenir_icone_aliment(aliment)
+                contenu += f"   {icone} {aliment}\n"
+            contenu += "\n"
+        
+        if bientot_expires:
+            contenu += "🟡 EXPIRENT BIENTÔT:\n"
+            for aliment, jours in bientot_expires:
+                icone = self.inventory_manager.obtenir_icone_aliment(aliment)
+                contenu += f"   {icone} {aliment} (dans {jours} jour(s))\n"
+            contenu += "\n"
+        
+        if not expires and not bientot_expires:
+            contenu += "✅ Tous vos aliments sont encore bons !"
+        
+        await self.main_window.info_dialog("Aliments expirés", contenu)
+
+    async def afficher_statistiques(self, widget):
+        """Affiche les statistiques de l'inventaire"""
+        stats = self.inventory_manager.obtenir_statistiques()
+        
+        contenu = "📊 STATISTIQUES DE L'INVENTAIRE\n" + "=" * 35 + "\n\n"
+        contenu += f"📦 Nombre d'aliments différents: {stats['total_aliments']}\n"
+        contenu += f"📊 Quantité totale: {stats['total_quantite']}\n"
+        contenu += f"🔴 Aliments expirés: {stats['expires']}\n"
+        contenu += f"🟡 Expirent bientôt: {stats['bientot_expires']}\n"
+        
+        await self.main_window.info_dialog("Statistiques", contenu)
+
+    # Méthodes des régimes alimentaires
+    def toggle_regime(self, regime, is_checked):
+        """Active/désactive un régime alimentaire"""
+        if is_checked:
+            if not self.diet_manager.ajouter_regime(regime):
+                # Régime incompatible, désactiver la checkbox
+                self.regime_checkboxes[regime].value = False
+                asyncio.create_task(self.main_window.error_dialog(
+                    "Incompatibilité",
+                    f"Le régime {regime.nom_affichage} est incompatible avec vos régimes actuels."
+                ))
+        else:
+            self.diet_manager.retirer_regime(regime)
+
+    def toggle_allergie(self, allergie, is_checked):
+        """Active/désactive une allergie"""
+        if is_checked:
+            self.diet_manager.ajouter_allergie(allergie)
+            # Auto-activation des régimes correspondants
+            for regime, checkbox in self.regime_checkboxes.items():
+                if regime in self.diet_manager.regimes_actifs:
+                    checkbox.value = True
+        else:
+            self.diet_manager.retirer_allergie(allergie)
+
+    async def afficher_resume_preferences(self, widget):
+        """Affiche le résumé des préférences alimentaires"""
+        resume = self.diet_manager.obtenir_resume_preferences()
+        await self.main_window.info_dialog("Vos préférences", resume)
+
+    async def reset_preferences(self, widget):
+        """Remet à zéro les préférences"""
+        result = await self.main_window.question_dialog(
+            "Confirmation",
+            "Êtes-vous sûr de vouloir réinitialiser toutes vos préférences alimentaires ?"
+        )
+        
+        if result:
+            self.diet_manager.reset_preferences()
+            # Désactiver toutes les checkboxes
+            for checkbox in self.regime_checkboxes.values():
+                checkbox.value = False
+            for checkbox in self.allergie_checkboxes.values():
+                checkbox.value = False
+            
+            await self.main_window.info_dialog("Succès", "Préférences réinitialisées !")
+
+    # Méthodes des recettes
+    async def recherche_recettes_optimisee(self, widget):
+        """Recherche optimisée de recettes"""
+        inventaire = self.inventory_manager.obtenir_inventaire()
+        
+        if not inventaire:
+            await self.main_window.info_dialog(
+                "Inventaire vide",
+                "Ajoutez d'abord des aliments à votre inventaire pour obtenir des suggestions de recettes !"
+            )
+            return
+        
+        # Mise à jour des régimes du recipe manager
+        for regime in self.diet_manager.regimes_actifs:
+            # Conversion vers l'enum du recipe_manager si nécessaire
+            self.recipe_manager.ajouter_regime(regime)
+        
+        ingredients = list(inventaire.keys())
         
         try:
-            aliments = ",".join(inventaire.keys())
-            url = f"https://api.spoonacular.com/recipes/findByIngredients?ingredients={aliments}&number=8&apiKey={API_KEY}"
+            succes, message, recettes = self.recipe_manager.rechercher_recettes_par_ingredients(ingredients, 10)
             
-            # Timeout ajouté
-            response = requests.get(url, timeout=10)
-            
-            if response.status_code == 200:
-                recettes = response.json()
-                
-                # Vérification si recettes vides
-                if not recettes:
-                    self.zone_recettes.value = "[VIDE] Aucune recette trouvee avec vos ingredients.\nEssayez d'ajouter d'autres aliments !"
-                else:
-                    # Formatage des recettes
-                    recettes_formatees = "*** RECETTES SUGGEREES ***\n" + "="*50 + "\n\n"
-                    
-                    for i, recette in enumerate(recettes, 1):
-                        titre = recette['title']
-                        ingredients_manques = recette['missedIngredientCount']
-                        ingredients_utilises = recette['usedIngredientCount']
-                        
-                        # Score de compatibilité
-                        if ingredients_manques == 0:
-                            score = "[***] Parfait match !"
-                        elif ingredients_manques <= 2:
-                            score = "[**] Tres bon match"
-                        else:
-                            score = "[*] Match partiel"
-                        
-                        # Formatage de chaque recette
-                        recettes_formatees += f"{i}. {titre}\n"
-                        recettes_formatees += f"   {score}\n"
-                        recettes_formatees += f"   [OK] Utilise {ingredients_utilises} de vos ingredients\n"
-                        if ingredients_manques > 0:
-                            recettes_formatees += f"   [!] Manque {ingredients_manques} ingredient(s)\n"
-                        recettes_formatees += "\n"
-                    
-                    self.zone_recettes.value = recettes_formatees
+            if succes and recettes:
+                contenu_formate = self.recipe_manager.formater_recettes(recettes, inventaire)
+                await self.main_window.info_dialog("Recettes suggérées", contenu_formate)
             else:
-                self.zone_recettes.value = f"[ERREUR] Erreur lors de la recuperation des recettes.\nCode d'erreur : {response.status_code}"
+                await self.main_window.info_dialog("Aucune recette", message)
                 
-        except requests.RequestException as e:
-            self.zone_recettes.value = "[RESEAU] Erreur de connexion.\nVerifiez votre connexion internet et reessayez."
         except Exception as e:
-            self.zone_recettes.value = f"[ERREUR] Une erreur inattendue s'est produite.\nDetails : {str(e)}"
+            await self.main_window.error_dialog("Erreur", f"Erreur lors de la recherche: {str(e)}")
+
+    async def recherche_recettes_par_nom(self, widget):
+        """Recherche de recettes par nom"""
+        nom = self.nom_recette.value.strip()
         
-        finally:
-            # Restauration du bouton
-            self.bouton_recettes.text = "TROUVER DES RECETTES"
-            self.bouton_recettes.enabled = True
+        if not nom:
+            await self.main_window.error_dialog("Erreur", "Veuillez saisir le nom d'une recette.")
+            return
+        
+        # Mise à jour des régimes
+        for regime in self.diet_manager.regimes_actifs:
+            self.recipe_manager.ajouter_regime(regime)
+        
+        try:
+            succes, message, recettes = self.recipe_manager.rechercher_recettes_par_nom(nom, 8)
+            
+            if succes and recettes:
+                contenu = f"🔍 RECETTES POUR '{nom.upper()}'\n" + "=" * 40 + "\n\n"
+                
+                for i, recette in enumerate(recettes, 1):
+                    titre = recette.get('title', 'Titre non disponible')
+                    temps = recette.get('readyInMinutes', 'Non spécifié')
+                    
+                    contenu += f"{i}. 🍽️ {titre}\n"
+                    contenu += f"   ⏱️ Temps: {temps} minutes\n\n"
+                
+                await self.main_window.info_dialog("Recettes trouvées", contenu)
+            else:
+                await self.main_window.info_dialog("Aucune recette", message)
+                
+        except Exception as e:
+            await self.main_window.error_dialog("Erreur", f"Erreur lors de la recherche: {str(e)}")
 
-# Fonction main
+    async def afficher_aliments_prioritaires(self, widget):
+        """Affiche les aliments à utiliser en priorité"""
+        expires = self.inventory_manager.obtenir_aliments_expires()
+        bientot_expires = self.inventory_manager.obtenir_aliments_bientot_expires(3)
+        
+        contenu = "⏰ ALIMENTS À UTILISER EN PRIORITÉ\n" + "=" * 40 + "\n\n"
+        
+        if expires:
+            contenu += "🔴 URGENCE MAXIMALE (expirés):\n"
+            for aliment in expires:
+                icone = self.inventory_manager.obtenir_icone_aliment(aliment)
+                contenu += f"   {icone} {aliment}\n"
+            contenu += "\n"
+        
+        if bientot_expires:
+            contenu += "🟡 À UTILISER RAPIDEMENT:\n"
+            for aliment, jours in bientot_expires:
+                icone = self.inventory_manager.obtenir_icone_aliment(aliment)
+                contenu += f"   {icone} {aliment} (dans {jours} jour(s))\n"
+            contenu += "\n"
+        
+        if not expires and not bientot_expires:
+            contenu += "✅ Aucun aliment urgent à utiliser !"
+        else:
+            contenu += "💡 Conseil: Utilisez la recherche optimisée de recettes\n"
+            contenu += "pour des suggestions qui priorisent ces aliments !"
+        
+        await self.main_window.info_dialog("Aliments prioritaires", contenu)
+
+    async def suggestions_achats(self, widget):
+        """Suggestions d'achats basées sur les régimes"""
+        if not self.diet_manager.regimes_actifs:
+            await self.main_window.info_dialog(
+                "Aucun régime",
+                "Configurez d'abord vos préférences alimentaires pour obtenir des suggestions personnalisées !"
+            )
+            return
+        
+        contenu = "💡 SUGGESTIONS D'ACHATS\n" + "=" * 30 + "\n\n"
+        
+        for regime in self.diet_manager.regimes_actifs:
+            suggestions = self.diet_manager.obtenir_suggestions_aliments(regime)
+            contenu += f"{regime.emoji} {regime.nom_affichage}:\n"
+            for suggestion in suggestions[:5]:  # Limite à 5 suggestions par régime
+                contenu += f"   • {suggestion}\n"
+            contenu += "\n"
+        
+        await self.main_window.info_dialog("Suggestions d'achats", contenu)
+
+
 def main():
-    return InventaireApp("Gestion d'Inventaire", "org.beeware.inventaire")
+    """Point d'entrée de l'application"""
+    return InventaireApp(
+        "Gestion Inventaire & Recettes",
+        "org.beeware.inventaire.optimise"
+    )
 
-# Point d'entrée
-if __name__ == '__main__':
-    main().main_loop()
+
+if __name__ == "__main__":
+    app = main()
+    app.main_loop()
