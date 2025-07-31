@@ -2,6 +2,9 @@ import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW, CENTER
 import math
+import io
+from PIL import Image
+import requests
 
 class RecipeDisplayManager:
     """Gestionnaire d'affichage des recettes avec pagination"""
@@ -30,6 +33,14 @@ class RecipeDisplayManager:
             resizable= True
         )
         
+        # Container principal avec scroll
+        self.main_scroll = toga.ScrollContainer(
+            style=Pack(
+                flex=1,
+                background_color=self.palette.MODERN_COLORS['bg_primary']
+            )
+        )
+
         # Container principal
         main_box = toga.Box(
             style=Pack(
@@ -60,8 +71,12 @@ class RecipeDisplayManager:
         self.update_content()
         
         # Affichage de la fenêtre
-        self.recipe_window.content = main_box
+        # MODIFICATION: Utiliser le ScrollContainer
+        self.main_scroll.content = main_box
+        self.recipe_window.content = self.main_scroll
         self.recipe_window.show()
+        #self.recipe_window.content = main_box
+        #self.recipe_window.show()
         
     def create_header(self):
         """Crée le header avec titre et informations"""
@@ -255,6 +270,8 @@ class RecipeDisplayManager:
             
     def create_recipe_card(self, recette, index):
         """Crée une card pour une recette"""
+        print(recette)
+        print(recette['image'])
         card = toga.Box(
             style=Pack(
                 direction=COLUMN,
@@ -277,15 +294,27 @@ class RecipeDisplayManager:
                 background_color=self.palette.MODERN_COLORS['bg_primary']
             )
         )
-        
+
         # Tentative de chargement de l'image
         try:
             if 'image' in recette and recette['image']:
+                print("jeirw")
+                """
                 recipe_image = toga.ImageView(
-                    image=recette['image'],
+                    image=self.simple_image_from_url(recette['image'],130,130),
                     style=Pack(width=130, height=130)
                 )
                 image_container.add(recipe_image)
+                """
+                image_url = recette.get('image')
+                if image_url:
+                    toga_image = self.simple_image_from_url(image_url, 130, 130)
+                    if toga_image:
+                        recipe_image = toga.ImageView(
+                            image=toga_image,
+                            style=Pack(width=130, height=130)
+                        )
+                        image_container.add(recipe_image)
             else:
                 # Image par défaut si pas d'image
                 placeholder = toga.Label(
@@ -741,3 +770,37 @@ class RecipeDisplayManager:
         scroll_container.content = main_box
         details_window.content = scroll_container
         details_window.show()
+
+    def simple_image_from_url(self, url, width=150, height=150):
+        """
+        Fonction simple pour récupérer une image depuis une URL
+        À utiliser dans vos méthodes existantes
+        """
+        print("fonction")
+        print(url)
+        try:
+            data = requests.get(url).content
+            # Opening a new file named img with extension .jpg
+            # This file would store the data of the image file
+            f = open('img.jpg','wb')
+
+            # Storing the image data inside the data variable to the file
+            f.write(data)
+            f.close()
+            """
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            
+            pil_image = Image.open(io.BytesIO(response.content))
+            pil_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
+            
+            img_bytes = io.BytesIO()
+            pil_image.save(img_bytes, format='PNG')
+            img_bytes.seek(0)
+            
+            return toga.Image(img_bytes)
+            """
+            img = Image.open('img.jpg')
+            return toga.Image(img)
+        except:
+            return None
