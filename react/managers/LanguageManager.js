@@ -108,6 +108,8 @@ const translations = {
       quickActions: 'Actions rapides',
       currentInventory: 'Inventaire actuel',
       empty: 'Inventaire vide\n\nAjoutez des aliments pour commencer !',
+      searchFood: "🔍 Rechercher un aliment...",
+      noResults: "Aucun résultat trouvé",
       
       // Formulaire
       foodName: 'Nom de l\'aliment',
@@ -130,7 +132,14 @@ const translations = {
       expired: 'EXPIRÉ',
       expiresIn: 'Expire dans {{days}} jour(s)',
       expiresOn: 'Expire le {{date}}',
-      noDate: 'Date non spécifiée'
+      noDate: 'Date non spécifiée',
+
+      // Vider Inventaire
+      clearAll: 'Vider tout l\'inventaire',
+      clearConfirm: 'Êtes-vous sûr de vouloir supprimer TOUS les {{count}} aliment(s) ? Cette action est irréversible !',
+      alreadyEmpty: 'L\'inventaire est déjà vide !',
+      clearSuccess: '✅ Inventaire vidé ! {{count}} aliment(s) supprimé(s).',
+      clearError: '❌ Erreur lors du vidage de l\'inventaire'
     },
     
     // Régimes
@@ -234,6 +243,8 @@ const translations = {
       quickActions: 'Quick actions',
       currentInventory: 'Current inventory',
       empty: 'Empty inventory\n\nAdd foods to get started!',
+      searchFood: "🔍 Search for food...",
+      noResults: "No results found",
       
       // Form
       foodName: 'Food name',
@@ -256,7 +267,14 @@ const translations = {
       expired: 'EXPIRED',
       expiresIn: 'Expires in {{days}} day(s)',
       expiresOn: 'Expires on {{date}}',
-      noDate: 'No date specified'
+      noDate: 'No date specified',
+
+      // Empty
+      clearAll: 'Clear entire inventory',
+      clearConfirm: 'Are you sure you want to delete ALL {{count}} item(s)? This action cannot be undone!',
+      alreadyEmpty: 'Inventory is already empty!',
+      clearSuccess: '✅ Inventory cleared! {{count}} item(s) removed.',
+      clearError: '❌ Error while clearing inventory'
     },
     
     // Diets
