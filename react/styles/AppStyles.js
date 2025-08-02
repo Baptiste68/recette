@@ -1,8 +1,8 @@
-// styles/AppStyles.js
+// styles/AppStyles.js - Styles conservés avec ajouts pour les nouvelles fonctionnalités
 import { palette } from '../constants/colors';
 
 export const styles = {
-// Container principal avec design moderne
+  // Styles originaux conservés
   container: {
     minHeight: '100vh',
     backgroundColor: palette.bgPrimary,
@@ -47,7 +47,7 @@ export const styles = {
     border: `2px solid ${palette.accent}`,
   },
 
-  // Sélecteur de langue moderne
+  // Sélecteur de langue moderne (NOUVEAU)
   languageSelector: {
     position: 'absolute',
     top: '20px',
@@ -114,11 +114,11 @@ export const styles = {
     fontWeight: '400',
   },
 
-  // Cards modernes avec glassmorphism
+  // Cards modernes avec glassmorphism et largeur limitée
   card: {
     backgroundColor: palette.bgCard,
-    margin: '20px',
-    padding: '30px',
+    margin: '0 0 20px 0',
+    padding: '24px',
     borderRadius: '20px',
     boxShadow: palette.shadows.card,
     border: `1px solid ${palette.borders.light}`,
@@ -241,7 +241,6 @@ export const styles = {
   },
 
   // Boutons modernes avec animations
-  // Boutons modernes avec animations
   button: {
     padding: '16px 24px',
     borderRadius: '12px',
@@ -294,62 +293,64 @@ export const styles = {
     fontSize: '16px',
   },
 
-  // Inventaire moderne avec design épuré
+  // Inventaire compact avec 2-3 éléments par ligne
   inventoryGrid: {
     display: 'grid',
-    gap: '16px',
-    marginTop: '20px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+    gap: '12px',
+    marginTop: '16px',
   },
   inventoryItem: {
     display: 'flex',
     backgroundColor: palette.bgCard,
-    padding: '20px',
-    borderRadius: '16px',
+    padding: '16px',
+    borderRadius: '12px',
     alignItems: 'center',
     boxShadow: palette.shadows.sm,
     border: `1px solid ${palette.borders.light}`,
     transition: 'all 0.2s ease',
     position: 'relative',
+    minHeight: '80px',
   },
   inventoryItemHover: {
-    transform: 'translateY(-2px)',
+    transform: 'translateY(-1px)',
     boxShadow: palette.shadows.card,
   },
   inventoryInfo: {
     flex: 1,
-    marginRight: '16px',
+    marginRight: '12px',
   },
   inventoryName: {
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '700',
     color: palette.textPrimary,
-    marginBottom: '8px',
+    marginBottom: '6px',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '8px',
   },
   inventoryIcon: {
-    fontSize: '24px',
-    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+    fontSize: '20px',
+    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))',
   },
   quantityControls: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    marginBottom: '8px',
+    gap: '8px',
+    marginBottom: '6px',
     background: palette.bgSecondary,
-    borderRadius: '12px',
-    padding: '8px 12px',
+    borderRadius: '8px',
+    padding: '6px 10px',
   },
   quantityButton: {
     backgroundColor: palette.primary,
     color: palette.textWhite,
     border: 'none',
-    borderRadius: '8px',
-    width: '36px',
-    height: '36px',
+    borderRadius: '6px',
+    width: '28px',
+    height: '28px',
     cursor: 'pointer',
-    fontSize: '18px',
+    fontSize: '14px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -361,29 +362,29 @@ export const styles = {
     boxShadow: palette.shadows.button,
   },
   inventoryQuantity: {
-    fontSize: '16px',
+    fontSize: '14px',
     color: palette.textPrimary,
     fontWeight: '600',
-    minWidth: '120px',
+    minWidth: '90px',
     textAlign: 'center',
   },
   inventoryExpiry: {
-    fontSize: '13px',
+    fontSize: '11px',
     color: palette.textSecondary,
     fontWeight: '500',
-    padding: '4px 8px',
-    borderRadius: '8px',
+    padding: '3px 6px',
+    borderRadius: '6px',
     background: palette.bgSecondary,
   },
   deleteButton: {
     backgroundColor: palette.danger,
     color: palette.textWhite,
     border: 'none',
-    borderRadius: '12px',
-    width: '48px',
-    height: '48px',
+    borderRadius: '8px',
+    width: '36px',
+    height: '36px',
     cursor: 'pointer',
-    fontSize: '20px',
+    fontSize: '16px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -474,14 +475,15 @@ export const styles = {
     lineHeight: '1.4',
   },
 
-  // Cartes d'information modernes
+  // Cartes d'information modernes avec largeur limitée
   infoCard: {
     background: palette.gradients.glass,
     backdropFilter: 'blur(10px)',
     border: `1px solid ${palette.borders.light}`,
     borderRadius: '16px',
-    padding: '24px',
-    marginBottom: '20px',
+    padding: '20px',
+    marginBottom: '16px',
+    margin: '0 0 16px 0',
   },
   infoCardIcon: {
     fontSize: '32px',
@@ -500,7 +502,7 @@ export const styles = {
     marginBottom: '16px',
   },
 
-  // STYLES POUR RECIPE DISPLAY MANAGER MODERNISÉS
+  // STYLES POUR RECIPE DISPLAY MANAGER (CONSERVÉS INTÉGRALEMENT)
   recipeModalOverlay: {
     position: 'fixed',
     top: 0,
@@ -566,6 +568,13 @@ export const styles = {
     gap: '20px',
     margin: '24px 0',
   },
+  recipeStatsRow: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    gap: '20px',
+    margin: '24px 0',
+    flexWrap: 'wrap',
+  },
   recipeStatCard: {
     background: palette.bgCard,
     borderRadius: '16px',
@@ -573,6 +582,14 @@ export const styles = {
     textAlign: 'center',
     border: `1px solid ${palette.borders.light}`,
     transition: 'all 0.2s ease',
+  },
+  recipeStatItem: {
+    textAlign: 'center',
+    padding: '16px',
+    borderRadius: '12px',
+    background: palette.bgCard,
+    border: `1px solid ${palette.borders.light}`,
+    minWidth: '120px',
   },
   recipeStatIcon: {
     fontSize: '32px',
@@ -628,6 +645,28 @@ export const styles = {
     alignItems: 'flex-start',
     marginBottom: '16px',
   },
+  recipeImage: {
+  width: '80px',
+  height: '80px',
+  borderRadius: '12px',
+  objectFit: 'cover',
+  marginRight: '16px',
+  boxShadow: palette.shadows.sm,
+  flexShrink: 0,
+},
+
+recipeImagePlaceholder: {
+  width: '80px',
+  height: '80px',
+  borderRadius: '12px',
+  backgroundColor: palette.bgSecondary,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '16px',
+  fontSize: '24px',
+  flexShrink: 0,
+},
   recipeTitle: {
     fontSize: '20px',
     fontWeight: '700',
@@ -840,7 +879,7 @@ export const styles = {
     animation: 'spin 1s linear infinite',
   },
 
-  // Responsive design modernisé
+  // Responsive design amélioré pour largeur limitée
   '@media (max-width: 768px)': {
     container: {
       padding: '0',
@@ -854,12 +893,19 @@ export const styles = {
       fontSize: '12px',
       margin: '0 2px',
     },
+    content: {
+      padding: '0 12px',
+    },
     card: {
-      margin: '12px',
-      padding: '20px',
+      margin: '0 0 16px 0',
+      padding: '16px',
+    },
+    infoCard: {
+      margin: '0 0 16px 0',
+      padding: '16px',
     },
     header: {
-      padding: '24px 20px',
+      padding: '20px 16px',
     },
     headerTitle: {
       fontSize: '24px',
@@ -871,6 +917,10 @@ export const styles = {
     buttonRow: {
       gridTemplateColumns: '1fr',
       gap: '12px',
+    },
+    categoryTabs: {
+      flexDirection: 'column',
+      gap: '8px',
     },
     recipeModalContent: {
       width: '95%',
@@ -885,13 +935,248 @@ export const styles = {
       flexDirection: 'column',
       gap: '12px',
     },
+    inventoryGrid: {
+      gridTemplateColumns: '1fr',
+      gap: '8px',
+    },
     inventoryItem: {
-      flexDirection: 'column',
-      gap: '12px',
-      textAlign: 'center',
+      minHeight: '70px',
+      padding: '12px',
     },
     quantityControls: {
-      justifyContent: 'center',
-    }
+      gap: '6px',
+      padding: '4px 8px',
+    },
+    quantityButton: {
+      width: '24px',
+      height: '24px',
+      fontSize: '12px',
+    },
+    inventoryQuantity: {
+      fontSize: '12px',
+      minWidth: '70px',
+    },
+    deleteButton: {
+      width: '30px',
+      height: '30px',
+      fontSize: '14px',
+    },
+    languageSelector: {
+      position: 'relative',
+      top: 'auto',
+      right: 'auto',
+    },
+  },
+
+  // Breakpoint pour tablettes (nouveau)
+  '@media (min-width: 769px) and (max-width: 1024px)': {
+    content: {
+      maxWidth: '900px',
+      padding: '0 24px',
+    },
+    inventoryGrid: {
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    },
+  },
+
+  // Breakpoint pour écrans moyens (nouveau)
+  '@media (min-width: 1025px) and (max-width: 1400px)': {
+    content: {
+      maxWidth: '1000px',
+    },
+    inventoryGrid: {
+      gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+    },
+  },
+
+  // Animations keyframes (ajoutées pour compatibilité)
+  '@keyframes spin': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' },
+  },
+
+  '@keyframes fadeIn': {
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+  },
+
+  '@keyframes slideIn': {
+    from: { transform: 'translateX(-100%)' },
+    to: { transform: 'translateX(0)' },
+  },
+
+  '@keyframes bounce': {
+    '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
+    '40%': { transform: 'translateY(-10px)' },
+    '60%': { transform: 'translateY(-5px)' },
+  },
+
+  // Classes d'animation
+  fadeIn: {
+    animation: 'fadeIn 0.5s ease-out',
+  },
+
+  slideIn: {
+    animation: 'slideIn 0.3s ease-out',
+  },
+
+  bounce: {
+    animation: 'bounce 0.6s ease-out',
+  },
+
+  // Animations pour les notifications d'optimisation
+  '@keyframes slideInRight': {
+  '0%': { 
+    transform: 'translateX(100%)',
+    opacity: '0'
+  },
+  '100%': { 
+    transform: 'translateX(0)',
+    opacity: '1'
+  }
+  },
+
+  '@keyframes slideOutRight': {
+  '0%': { 
+    transform: 'translateX(0)',
+    opacity: '1'
+  },
+  '100%': { 
+    transform: 'translateX(100%)',
+    opacity: '0'
+  }
+  },
+
+  '@keyframes pulse': {
+  '0%': { 
+    transform: 'scale(1)',
+    opacity: '1'
+  },
+  '50%': { 
+    transform: 'scale(1.05)',
+    opacity: '0.8'
+  },
+  '100%': { 
+    transform: 'scale(1)',
+    opacity: '1'
+  }
+  },
+
+  // Style pour les éléments de progression
+  progressOverlay: {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  backdropFilter: 'blur(4px)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 2000,
+  animation: 'fadeIn 0.3s ease'
+  },
+
+  progressCard: {
+  backgroundColor: palette.bgCard,
+  padding: '30px',
+  borderRadius: '20px',
+  boxShadow: palette.shadows.modal,
+  textAlign: 'center',
+  maxWidth: '400px',
+  margin: '20px',
+  animation: 'slideIn 0.4s ease'
+  },
+
+  progressTitle: {
+  fontSize: '20px',
+  fontWeight: '700',
+  color: palette.textPrimary,
+  marginBottom: '15px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '10px'
+  },
+
+  progressSubtitle: {
+  fontSize: '14px',
+  color: palette.textSecondary,
+  lineHeight: '1.5',
+  marginBottom: '20px'
+  },
+
+  progressSpinner: {
+  width: '40px',
+  height: '40px',
+  border: `4px solid ${palette.borders.light}`,
+  borderTop: `4px solid ${palette.primary}`,
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+  margin: '0 auto'
+  },
+
+  // Notifications de succès
+  successNotification: {
+  position: 'fixed',
+  bottom: '20px',
+  right: '20px',
+  backgroundColor: palette.success,
+  color: palette.textWhite,
+  padding: '16px 24px',
+  borderRadius: '12px',
+  fontSize: '14px',
+  fontWeight: '600',
+  boxShadow: palette.shadows.modal,
+  zIndex: 1001,
+  maxWidth: '300px',
+  animation: 'slideInRight 0.3s ease',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease'
+  },
+
+  warningNotification: {
+  position: 'fixed',
+  bottom: '20px',
+  right: '20px',
+  backgroundColor: palette.warning,
+  color: palette.textWhite,
+  padding: '16px 24px',
+  borderRadius: '12px',
+  fontSize: '14px',
+  fontWeight: '600',
+  boxShadow: palette.shadows.modal,
+  zIndex: 1001,
+  maxWidth: '300px',
+  animation: 'slideInRight 0.3s ease',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease'
+  },
+
+  // Badges d'optimisation
+  optimizationBadge: {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  backgroundColor: palette.success,
+  color: palette.textWhite,
+  padding: '4px 10px',
+  borderRadius: '12px',
+  fontSize: '11px',
+  fontWeight: '600',
+  border: `1px solid rgba(255, 255, 255, 0.2)`
+  },
+
+  utilizationBadge: {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  backgroundColor: palette.primary,
+  color: palette.textWhite,
+  padding: '3px 8px',
+  borderRadius: '8px',
+  fontSize: '10px',
+  fontWeight: '600'
   }
 };
