@@ -265,6 +265,116 @@ class DietManager {
       return { success: false, message: `Erreur chargement: ${error.message}` };
     }
   }
+
+  //Vérifie si un aliment est compatible avec les régimes actifs
+  alimentCompatibleRegimes(nomAliment, regimes) {
+    if (!regimes || regimes.size === 0) return true;
+    
+    const alimentLower = nomAliment.toLowerCase();
+    
+    for (const regime of regimes) {
+        if (!this.verifierCompatibiliteAliment(alimentLower, regime)) {
+            return false;
+        }
+    }
+    
+    return true;
+  }
+
+ //Vérifie si un aliment ne contient pas d'allergènes
+  alimentSansAllergenes(nomAliment, allergies) {
+    if (!allergies || allergies.size === 0) return true;
+    
+    const alimentLower = nomAliment.toLowerCase();
+    
+    for (const allergie of allergies) {
+        if (this.alimentContientAllergene(alimentLower, allergie)) {
+            return false;
+        }
+    }
+    
+    return true;
+  }
+
+  //Vérifie la compatibilité d'un aliment avec un régime spécifique
+  verifierCompatibiliteAliment(aliment, regime) {
+    const alimentsInterdits = this.getAlimentsInterdits(regime);
+    
+    return !alimentsInterdits.some(interdit => 
+        aliment.includes(interdit) || 
+        interdit.includes(aliment) ||
+        this.sontSynonymes(aliment, interdit)
+    );
+  }
+
+  //Vérifie si un aliment contient un allergène
+  alimentContientAllergene(aliment, allergie) {
+    const sourcesAllergenes = this.getSourcesAllergenes(allergie);
+    
+    return sourcesAllergenes.some(source => 
+        aliment.includes(source) || 
+        source.includes(aliment) ||
+        this.sontSynonymes(aliment, source)
+    );
+  }
+
+  //Obtient la liste des aliments interdits pour un régime
+  getAlimentsInterdits(regime) {
+    const interdictions = {
+        'vegetarien': ['bœuf', 'porc', 'agneau', 'veau', 'gibier', 'poisson', 'fruits de mer', 'crevette', 'crabe', 'homard', 'moule', 'huître', 'saumon', 'thon', 'sardine', 'maquereau', 'cabillaud', 'sole', 'turbot', 'lotte', 'bar', 'dorade', 'truite', 'hareng', 'anchois', 'caviar', 'surimi', 'chair de crabe', 'chair', 'viande', 'jambon', 'saucisse', 'bacon', 'chorizo', 'boudin', 'pâté', 'foie gras', 'rillettes', 'confit'],
+        
+        'vegan': ['bœuf', 'porc', 'agneau', 'veau', 'gibier', 'poisson', 'fruits de mer', 'crevette', 'crabe', 'lait', 'fromage', 'beurre', 'crème', 'yaourt', 'œuf', 'miel', 'gélatine', 'caséine', 'lactosérum', 'lactose', 'chair', 'viande', 'volaille', 'poulet', 'dinde', 'canard', 'oie', 'jambon', 'saucisse', 'bacon', 'chorizo'],
+        
+        'sans_gluten': ['blé', 'orge', 'seigle', 'avoine', 'épeautre', 'kamut', 'triticale', 'pain', 'pâtes', 'biscuit', 'gâteau', 'farine', 'semoule', 'couscous', 'boulgour', 'malt', 'levure de bière'],
+        
+        'cetogene': ['pain', 'pâtes', 'riz', 'pomme de terre', 'banane', 'raisin', 'mangue', 'ananas', 'dates', 'figues', 'miel', 'sucre', 'confiture', 'chocolat au lait', 'biscuit', 'gâteau', 'céréales', 'légumineuses', 'haricots', 'lentilles', 'pois chiches', 'quinoa', 'avoine', 'orge'],
+        
+        'paleo': ['céréales', 'légumineuses', 'produits laitiers', 'sucre raffiné', 'huiles végétales transformées', 'pain', 'pâtes', 'riz', 'avoine', 'orge', 'blé', 'lait', 'fromage', 'yaourt', 'haricots', 'lentilles', 'pois chiches', 'soja', 'arachide']
+    };
+    
+    return interdictions[regime.value] || interdictions[regime.nom?.toLowerCase()] || [];
+  }
+
+  //Obtient les sources d'allergènes
+  getSourcesAllergenes(allergie) {
+    const sources = {
+        'gluten': ['blé', 'orge', 'seigle', 'avoine', 'épeautre', 'pain', 'pâtes', 'biscuit', 'farine'],
+        'lactose': ['lait', 'fromage', 'beurre', 'crème', 'yaourt', 'crème fraîche', 'lait concentré'],
+        'oeuf': ['œuf', 'blanc d\'œuf', 'jaune d\'œuf', 'mayonnaise', 'meringue'],
+        'arachide': ['cacahuète', 'arachide', 'beurre de cacahuète', 'huile d\'arachide'],
+        'fruits_coque': ['noix', 'noisette', 'amande', 'pistache', 'noix de cajou', 'noix du brésil', 'noix de pécan', 'châtaigne'],
+        'poisson': ['poisson', 'saumon', 'thon', 'sardine', 'maquereau', 'cabillaud', 'sole', 'truite'],
+        'crustaces': ['crevette', 'crabe', 'homard', 'langoustine', 'écrevisse'],
+        'mollusques': ['moule', 'huître', 'coquille saint-jacques', 'escargot', 'calmar', 'seiche'],
+        'soja': ['soja', 'tofu', 'tempeh', 'miso', 'sauce soja', 'lait de soja'],
+        'sesame': ['sésame', 'tahini', 'huile de sésame', 'graines de sésame'],
+        'sulfites': ['vin', 'fruits secs', 'conserves', 'charcuterie']
+    };
+    
+    return sources[allergie.value] || sources[allergie.nom?.toLowerCase()] || [];
+  }
+
+  //Vérifie si deux termes sont synonymes
+  sontSynonymes(terme1, terme2) {
+    const synonymes = {
+        'bœuf': ['viande de bœuf', 'steak', 'rosbif', 'bifteck'],
+        'porc': ['viande de porc', 'cochon', 'jambon', 'lard'],
+        'poulet': ['volaille', 'blanc de poulet', 'cuisse de poulet'],
+        'lait': ['lait de vache', 'lait entier', 'lait demi-écrémé'],
+        'fromage': ['emmental', 'gruyère', 'cheddar', 'mozzarella', 'camembert'],
+        'pain': ['baguette', 'pain de mie', 'pain complet', 'pain blanc'],
+        'pâtes': ['spaghetti', 'macaroni', 'penne', 'fusilli', 'tagliatelle']
+    };
+    
+    for (const [principal, variations] of Object.entries(synonymes)) {
+        if ((terme1.includes(principal) && variations.some(v => terme2.includes(v))) ||
+            (terme2.includes(principal) && variations.some(v => terme1.includes(v)))) {
+            return true;
+        }
+    }
+    
+    return false;
+  }
 }
 
 export default DietManager;
