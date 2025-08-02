@@ -1,0 +1,205 @@
+{
+  "bonusRecipes": [
+    {
+      "id": "bonus_1",
+      "title": "Salade de Grand-Mère",
+      "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=312&h=312&fit=crop",
+      "readyInMinutes": 15,
+      "servings": 4,
+      "summary": "La recette traditionnelle de salade composée de ma grand-mère, parfaite pour l'été.",
+      "cuisines": ["Française"],
+      "dishTypes": ["salad", "side dish"],
+      "diets": ["vegetarian", "gluten free"],
+      "ingredients": [
+        "Salade",
+        "Tomate",
+        "Concombre",
+        "Œuf",
+        "Thon",
+        "Huile d'olive",
+        "Vinaigre",
+        "Sel",
+        "Poivre"
+      ],
+      "extendedIngredients": [
+        {
+          "id": 1,
+          "original": "1 salade verte",
+          "name": "Salade",
+          "amount": 1,
+          "unit": "pièce"
+        },
+        {
+          "id": 2,
+          "original": "2 tomates moyennes",
+          "name": "Tomate",
+          "amount": 2,
+          "unit": "pièces"
+        },
+        {
+          "id": 3,
+          "original": "1 concombre",
+          "name": "Concombre",
+          "amount": 1,
+          "unit": "pièce"
+        },
+        {
+          "id": 4,
+          "original": "4 œufs durs",
+          "name": "Œuf",
+          "amount": 4,
+          "unit": "pièces"
+        },
+        {
+          "id": 5,
+          "original": "1 boîte de thon",
+          "name": "Thon",
+          "amount": 1,
+          "unit": "boîte"
+        }
+      ],
+      "instructions": "1. Laver et couper la salade en morceaux.\n2. Couper les tomates en quartiers.\n3. Trancher le concombre.\n4. Écaler et couper les œufs durs en deux.\n5. Égoutter le thon.\n6. Disposer tous les ingrédients dans un grand saladier.\n7. Assaisonner avec l'huile d'olive, le vinaigre, le sel et le poivre.\n8. Mélanger délicatement et servir frais.",
+      "sourceUrl": "https://recettes-de-famille.fr/salade-grand-mere",
+      "spoonacularSourceUrl": null,
+      "creditsText": "Recette familiale",
+      "sourceName": "Mes Recettes",
+      "isBonus": true,
+      "author": "Votre nom",
+      "notes": "Peut être préparée à l'avance. Ajouter la vinaigrette au dernier moment.",
+      "difficulty": "Facile",
+      "category": "Entrée"
+    },
+    {
+      "id": "bonus_2",
+      "title": "Pâtes à l'Ail et Parmesan",
+      "image": "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=312&h=312&fit=crop",
+      "readyInMinutes": 20,
+      "servings": 2,
+      "summary": "Un plat simple et délicieux, parfait pour un dîner rapide entre amis.",
+      "cuisines": ["Italienne"],
+      "dishTypes": ["main course", "pasta"],
+      "diets": ["vegetarian"],
+      "ingredients": [
+        "Pâtes",
+        "Ail",
+        "Parmesan",
+        "Huile d'olive",
+        "Persil",
+        "Sel",
+        "Poivre"
+      ],
+      "extendedIngredients": [
+        {
+          "id": 1,
+          "original": "300g de pâtes (spaghetti ou linguine)",
+          "name": "Pâtes",
+          "amount": 300,
+          "unit": "g"
+        },
+        {
+          "id": 2,
+          "original": "4 gousses d'ail",
+          "name": "Ail",
+          "amount": 4,
+          "unit": "gousses"
+        },
+        {
+          "id": 3,
+          "original": "100g de parmesan râpé",
+          "name": "Parmesan",
+          "amount": 100,
+          "unit": "g"
+        },
+        {
+          "id": 4,
+          "original": "4 cuillères à soupe d'huile d'olive",
+          "name": "Huile d'olive",
+          "amount": 4,
+          "unit": "cuillères à soupe"
+        },
+        {
+          "id": 5,
+          "original": "Persil frais haché",
+          "name": "Persil",
+          "amount": 1,
+          "unit": "bouquet"
+        }
+      ],
+      "instructions": "1. Faire cuire les pâtes dans une grande casserole d'eau bouillante salée selon les instructions du paquet.\n2. Pendant ce temps, éplucher et hacher finement l'ail.\n3. Dans une grande poêle, chauffer l'huile d'olive à feu moyen.\n4. Ajouter l'ail et faire revenir 1-2 minutes jusqu'à ce qu'il soit doré.\n5. Égoutter les pâtes en réservant un peu d'eau de cuisson.\n6. Ajouter les pâtes dans la poêle avec l'ail.\n7. Mélanger et ajouter le parmesan râpé.\n8. Si nécessaire, ajouter un peu d'eau de cuisson pour lier la sauce.\n9. Parsemer de persil frais et servir immédiatement.",
+      "sourceUrl": null,
+      "spoonacularSourceUrl": null,
+      "creditsText": "Recette personnelle",
+      "sourceName": "Mes Recettes",
+      "isBonus": true,
+      "author": "Votre nom",
+      "notes": "Pour plus de saveur, ajouter un peu de piment rouge. Le parmesan peut être remplacé par du pecorino.",
+      "difficulty": "Facile",
+      "category": "Plat principal"
+    },
+    {
+      "id": "bonus_3",
+      "title": "Smoothie Énergisant",
+      "image": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=312&h=312&fit=crop",
+      "readyInMinutes": 5,
+      "servings": 1,
+      "summary": "Un smoothie parfait pour commencer la journée avec énergie !",
+      "cuisines": ["Healthy"],
+      "dishTypes": ["beverage", "breakfast"],
+      "diets": ["vegetarian", "vegan", "gluten free"],
+      "ingredients": [
+        "Banane",
+        "Épinards",
+        "Lait d'amande",
+        "Miel",
+        "Graines de chia"
+      ],
+      "extendedIngredients": [
+        {
+          "id": 1,
+          "original": "1 banane mûre",
+          "name": "Banane",
+          "amount": 1,
+          "unit": "pièce"
+        },
+        {
+          "id": 2,
+          "original": "1 poignée d'épinards frais",
+          "name": "Épinards",
+          "amount": 1,
+          "unit": "poignée"
+        },
+        {
+          "id": 3,
+          "original": "200ml de lait d'amande",
+          "name": "Lait d'amande",
+          "amount": 200,
+          "unit": "ml"
+        },
+        {
+          "id": 4,
+          "original": "1 cuillère à soupe de miel",
+          "name": "Miel",
+          "amount": 1,
+          "unit": "cuillère à soupe"
+        },
+        {
+          "id": 5,
+          "original": "1 cuillère à café de graines de chia",
+          "name": "Graines de chia",
+          "amount": 1,
+          "unit": "cuillère à café"
+        }
+      ],
+      "instructions": "1. Éplucher la banane et la couper en morceaux.\n2. Laver soigneusement les épinards.\n3. Mettre tous les ingrédients dans un blender.\n4. Mixer pendant 1-2 minutes jusqu'à obtenir une consistance lisse.\n5. Servir immédiatement dans un grand verre.\n6. Décorer avec quelques graines de chia si désiré.",
+      "sourceUrl": null,
+      "spoonacularSourceUrl": null,
+      "creditsText": "Recette healthy personnelle",
+      "sourceName": "Mes Recettes",
+      "isBonus": true,
+      "author": "Votre nom",
+      "notes": "Les épinards ne se sentent pas du tout ! Parfait pour faire manger des légumes aux enfants.",
+      "difficulty": "Très facile",
+      "category": "Boisson"
+    }
+  ]
+}
