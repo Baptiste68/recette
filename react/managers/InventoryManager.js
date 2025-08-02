@@ -189,6 +189,40 @@ class InventoryManager {
       return { success: false, message: `Erreur lors du chargement: ${error.message}` };
     }
   }
+  /**
+     * Vide complètement l'inventaire
+     * @returns {Object} Résultat de l'opération
+     */
+    viderInventaire() {
+        try {
+            const nombreAliments = Object.keys(this.inventaire).length;
+            
+            if (nombreAliments === 0) {
+                return {
+                    success: false,
+                    message: "L'inventaire est déjà vide."
+                };
+            }
+
+            // Vider l'inventaire
+            this.inventaire = {};
+            
+            // Sauvegarder automatiquement
+            this.sauvegarderInventaire();
+            
+            return {
+                success: true,
+                message: `✅ Inventaire vidé ! ${nombreAliments} aliment(s) supprimé(s).`,
+                nombreAliments: nombreAliments
+            };
+        } catch (error) {
+            console.error('Erreur lors du vidage de l\'inventaire:', error);
+            return {
+                success: false,
+                message: `❌ Erreur lors du vidage: ${error.message}`
+            };
+        }
+    }
 }
 
 export default InventoryManager;
