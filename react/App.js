@@ -1441,7 +1441,7 @@ const InventaireApp = () => {
             ? (t('recipes.optimizedDescAdapted') || 'Trouve les meilleures recettes compatibles avec vos préférences alimentaires et vos ingrédients disponibles.')
             : (t('recipes.optimizedDesc') || 'Trouve les meilleures recettes avec vos ingrédients disponibles. Priorise les aliments qui expirent bientôt !')
             }
-        </p>
+        </p> 
         <button 
             style={{...styles.button, ...styles.successButton}} 
             onClick={rechercherRecettesOptimisee}
